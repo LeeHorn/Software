@@ -43,7 +43,7 @@ namespace apriltags_ros{
     image_pub_ = it_.advertise("tag_detections_image", 1);
     detections_pub_ = nh.advertise<duckietown_msgs::AprilTagDetectionArray>("tag_detections", 1);
     proposals_pub_ = nh.advertise<duckietown_msgs::Rects>("quad_proposals", 1);
-    image_compress_sub_ = nh.subscribe("/wama/camera_node/image/compressed", 1, &AprilTagDetector::image_compress_Cb, this);
+    image_compress_sub_ = nh.subscribe("/hcr/camera_node/image/compressed", 1, &AprilTagDetector::image_compress_Cb, this);
     //crop_image_pub_ = it2_.advertise("crop_image", 1);
     pose_pub_ = nh.advertise<geometry_msgs::PoseArray>("tag_detections_pose", 1);
     on_switch=false;
@@ -92,7 +92,7 @@ namespace apriltags_ros{
     BOOST_FOREACH(AprilTags::TagDetection detection, detections){
       std::map<int, AprilTagDescription>::const_iterator description_itr = descriptions_.find(detection.id);
       if(description_itr == descriptions_.end()){
-	ROS_WARN_THROTTLE(10.0, "Found tag: %d, but no description was found for it", detection.id);
+	ROS_WARN_THROTTLE(5.0, "Found tag: %d, but no description was found for it", detection.id);
 	continue;
       }
       AprilTagDescription description = description_itr->second;
