@@ -31,6 +31,10 @@ class ForwardKinematicsNode(object):
         self.radius = self.setup_parameter("~radius", 0.0318)
         self.k = self.setup_parameter("~k", 27.0)
 
+        #add publisher and subscribers
+        self.pub_velocity2 = rospy.Publisher("~velocity2", Twist2DStamped, queue_size=1)
+        self.sub_wheels_cmd2 = rospy.Subscriber("~wheels_cmd2", WheelsCmdStamped, self.wheels_cmd2_callback)
+ 
         # Setup the publisher and subscribers
         self.pub_velocity = rospy.Publisher("~velocity", Twist2DStamped, queue_size=1)
         self.sub_wheels_cmd = rospy.Subscriber("~wheels_cmd", WheelsCmdStamped, self.wheels_cmd_callback)
@@ -94,6 +98,30 @@ class ForwardKinematicsNode(object):
         msg_velocity.v = v
         msg_velocity.omega = omega
         self.pub_velocity.publish(msg_velocity)
+
+    #add callback
+    def wheels_cmd2_callback(self, msg_wheels_cmd2):
+        # compute duty cycle gain
+        k_r = self.k
+        k_l = self.k
+
+        k_r_inv = (self.gain + self.trim) / k_r
+        k_l_inv = (self.gain - self.trim) / k_l
+
+        # Conversion from motor duty to motor rotation rate
+        omega_r = msg_wheels_cmd2.vel_right / k_r_inv
+        omega_l = msg_wheels_cmd2.vel_left / k_l_inv
+
+        # Compute linear and angular velocity of the platform
+        v = (self.radius * omega_r + self.radius * omega_l) / 2.0
+        omega = (self.radius * omega_r - self.radius * omega_l) / self.baseline
+
+        # Stuff the v and omega into a message and publish
+        msg_velocity2 = Twist2DStamped()
+        msg_velocity2.header = msg_wheels_cmd2.header
+        msg_velocity2.v = v
+        msg_velocity2.omega = omega
+        self.pub_velocity2.publish(msg_velocity2)
 
     def setup_parameter(self, param_name, default_value):
         value = rospy.get_param(param_name, default_value)

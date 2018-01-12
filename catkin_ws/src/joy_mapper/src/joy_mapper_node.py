@@ -31,6 +31,8 @@ class JoyMapper(object):
         self.pub_anti_instagram = rospy.Publisher("anti_instagram_node/click",BoolStamped, queue_size=1)
         self.pub_e_stop = rospy.Publisher("wheels_driver_node/emergency_stop",BoolStamped,queue_size=1)
         self.pub_avoidance = rospy.Publisher("~start_avoidance",BoolStamped,queue_size=1)
+        #add Publication
+        self.pub_car_cmd2 = rospy.Publisher("~car_cmd2", Twist2DStamped, queue_size=1)
 
         # Subscriptions
         self.sub_joy_ = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)
@@ -77,6 +79,20 @@ class JoyMapper(object):
             # Holonomic Kinematics for Normal Driving
             car_cmd_msg.omega = self.joy.axes[0] * self.omega_gain
         self.pub_car_cmd.publish(car_cmd_msg)
+
+        #add control
+        car_cmd2_msg = Twist2DStamped()
+        car_cmd2_msg.header.stamp = self.joy.header.stamp
+        car_cmd2_msg.v = self.joy.axes[4] * self.v_gain #Left stick V-axis. Up is positive
+        if self.bicycle_kinematics:
+            # Implements Bicycle Kinematics - Nonholonomic Kinematics
+            # see https://inst.eecs.berkeley.edu/~ee192/sp13/pdf/steer-control.pdf
+            steering_angle = self.joy.axes[3] * self.steer_angle_gain
+            car_cmd2_msg.omega = car_cmd2_msg.v / self.simulated_vehicle_length * math.tan(steering_angle)
+        else:
+            # Holonomic Kinematics for Normal Driving
+            car_cmd2_msg.omega = self.joy.axes[3] * self.omega_gain
+        self.pub_car_cmd2.publish(car_cmd2_msg)
 
 # Button List index of joy.buttons array:
 # a = 0, b=1, x=2. y=3, lb=4, rb=5, back = 6, start =7,

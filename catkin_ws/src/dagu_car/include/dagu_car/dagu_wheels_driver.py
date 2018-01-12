@@ -37,6 +37,13 @@ class DaguWheelsDriver:
 
         self.leftSpeed = 0.0
         self.rightSpeed = 0.0
+
+        #add motor3,4
+        self.leftMotor2 = self.motorhat.getMotor(3)
+        self.rightMotor2 = self.motorhat.getMotor(4)    
+        self.leftSpeed2 = 0.0
+        self.rightSpeed2 = 0.0
+
         self.updatePWM()
 
     def PWMvalue(self, v, minPWM, maxPWM):
@@ -75,14 +82,51 @@ class DaguWheelsDriver:
         self.rightMotor.setSpeed(pwmr)
         self.rightMotor.run(rightMotorMode)
 
-    def setWheelsSpeed(self, left, right):
+        #add motor3,4
+        vl2 = self.leftSpeed2*self.left_sgn
+        vr2 = self.rightSpeed2*self.right_sgn
+
+        pwml2 = self.PWMvalue(vl2, self.LEFT_MOTOR_MIN_PWM, self.LEFT_MOTOR_MAX_PWM)
+        pwmr2 = self.PWMvalue(vr2, self.RIGHT_MOTOR_MIN_PWM, self.RIGHT_MOTOR_MAX_PWM)
+
+        if self.debug:
+            print "v = %5.3f, u = %5.3f, vl = %5.3f, vr = %5.3f, pwml = %3d, pwmr = %3d" % (v, u, vl2, vr2, pwml2, pwmr2)
+
+        if fabs(vl2) < self.SPEED_TOLERANCE:
+            leftMotor2Mode = Adafruit_MotorHAT.RELEASE
+        elif vl2 > 0:
+            leftMotor2Mode = Adafruit_MotorHAT.FORWARD
+        elif vl2 < 0: 
+            leftMotor2Mode = Adafruit_MotorHAT.BACKWARD
+
+        if fabs(vr2) < self.SPEED_TOLERANCE:
+            rightMotor2Mode = Adafruit_MotorHAT.RELEASE
+            pwmr2 = 0
+        elif vr2 > 0:
+            rightMotor2Mode = Adafruit_MotorHAT.FORWARD
+        elif vr2 < 0: 
+            rightMotor2Mode = Adafruit_MotorHAT.BACKWARD
+
+        self.leftMotor2.setSpeed(pwml2)
+        self.leftMotor2.run(leftMotor2Mode)
+        self.rightMotor2.setSpeed(pwmr2)
+        self.rightMotor2.run(rightMotor2Mode)
+        
+
+    def setWheelsSpeed(self, left, right,left2,right2):
         self.leftSpeed = left
         self.rightSpeed = right
+        #add
+        self.leftSpeed2 = left2
+        self.rightSpeed2 = right2
         self.updatePWM()
 
     def __del__(self):
         self.leftMotor.run(Adafruit_MotorHAT.RELEASE)
         self.rightMotor.run(Adafruit_MotorHAT.RELEASE)
+        #add
+        self.leftMotor2.run(Adafruit_MotorHAT.RELEASE)
+        self.rightMotor2.run(Adafruit_MotorHAT.RELEASE)
         del self.motorhat
 
 # Simple example to test motors

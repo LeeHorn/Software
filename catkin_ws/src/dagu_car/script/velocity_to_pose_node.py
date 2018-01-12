@@ -19,7 +19,14 @@ class VelocityToPoseNode(object):
         self.last_pose = Pose2DStamped()
         self.last_theta_dot = 0
         self.last_v = 0
+        self.last_pose2 = Pose2DStamped()
+        self.last_theta_dot2 = 0
+        self.last_v2 = 0
         
+        #add publisher and subscriber
+        self.sub_velocity2 = rospy.Subscriber("~velocity2", Twist2DStamped, self.velocity2_callback, queue_size=1)
+        self.pub_pose2 = rospy.Publisher("~pose2", Pose2DStamped, queue_size=1)
+
         # Setup the publisher and subscriber
         self.sub_velocity = rospy.Subscriber("~velocity", Twist2DStamped, self.velocity_callback, queue_size=1)
         self.pub_pose = rospy.Publisher("~pose", Pose2DStamped, queue_size=1)
@@ -47,6 +54,30 @@ class VelocityToPoseNode(object):
         self.last_pose.header.stamp = msg_velocity.header.stamp
         self.last_theta_dot = msg_velocity.omega
         self.last_v = msg_velocity.v
+
+
+    def velocity2_callback(self, msg_velocity2):
+        if self.last_pose2.header.stamp.to_sec() > 0:  # skip first frame
+            delta_t = (msg_velocity2.header.stamp - self.last_pose2.header.stamp).to_sec()
+            [theta_delta, x_delta, y_delta] = self.integrate(self.last_theta_dot2, self.last_v2, delta_t)
+            [theta_res, x_res, y_res] = self.propagate(self.last_pose2.theta, self.last_pose2.x, self.last_pose2.y, theta_delta, x_delta, y_delta)
+
+            self.last_pose2.theta = theta_res
+            self.last_pose2.x = x_res
+            self.last_pose2.y = y_res
+
+            # Stuff the new pose2 into a message and publish
+            msg_pose2 = Pose2DStamped()
+            msg_pose2.header = msg_velocity2.header
+            msg_pose2.header.frame_id = self.veh_name
+            msg_pose2.theta = theta_res
+            msg_pose2.x = x_res
+            msg_pose2.y = y_res
+            self.pub_pose2.publish(msg_pose2)
+
+        self.last_pose2.header.stamp = msg_velocity2.header.stamp
+        self.last_theta_dot2 = msg_velocity2.omega
+        self.last_v2 = msg_velocity2.v
 
     @staticmethod
     def integrate(theta_dot, v, dt):

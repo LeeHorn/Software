@@ -41,6 +41,9 @@ class InverseKinematicsNode(object):
         self.srv_set_limit = rospy.Service("~set_limit", SetValue, self.cbSrvSetLimit)
         self.srv_save = rospy.Service("~save_calibration", Empty, self.cbSrvSaveCalibration)
 
+        #add publisher and subscriber
+        self.sub_car_cmd2 = rospy.Subscriber("~car_cmd2", Twist2DStamped, self.car_cmd2_callback)
+        self.pub_wheels_cmd2 = rospy.Publisher("~wheels_cmd2", WheelsCmdStamped, queue_size=1)
         # Setup the publisher and subscriber
         self.sub_car_cmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.car_cmd_callback)
         self.pub_wheels_cmd = rospy.Publisher("~wheels_cmd", WheelsCmdStamped, queue_size=1)
@@ -175,6 +178,36 @@ class InverseKinematicsNode(object):
         msg_wheels_cmd.vel_right = u_r_limited
         msg_wheels_cmd.vel_left = u_l_limited
         self.pub_wheels_cmd.publish(msg_wheels_cmd)
+
+    #add callback
+    def car_cmd2_callback(self, msg_car_cmd2):
+        # assuming same motor constants k for both motors
+        k_r = self.k
+        k_l = self.k
+
+        # adjusting k by gain and trim
+        k_r_inv = (self.gain + self.trim) / k_r
+        k_l_inv = (self.gain - self.trim) / k_l
+        
+        omega_r = (msg_car_cmd2.v + 0.5 * msg_car_cmd2.omega * self.baseline) / self.radius
+        omega_l = (msg_car_cmd2.v - 0.5 * msg_car_cmd2.omega * self.baseline) / self.radius
+        
+        # conversion from motor rotation rate to duty cycle
+        # u_r = (gain + trim) (v + 0.5 * omega * b) / (r * k_r)
+        u_r = omega_r * k_r_inv
+        # u_l = (gain - trim) (v - 0.5 * omega * b) / (r * k_l)
+        u_l = omega_l * k_l_inv
+
+        # limiting output to limit, which is 1.0 for the duckiebot
+        u_r_limited = max(min(u_r, self.limit), -self.limit)
+        u_l_limited = max(min(u_l, self.limit), -self.limit)
+
+        # Put the wheel commands in a message and publish
+        msg_wheels_cmd2 = WheelsCmdStamped()
+        msg_wheels_cmd2.header.stamp = msg_car_cmd2.header.stamp
+        msg_wheels_cmd2.vel_right = u_r_limited
+        msg_wheels_cmd2.vel_left = u_l_limited
+        self.pub_wheels_cmd2.publish(msg_wheels_cmd2)
 
     def setup_parameter(self, param_name, default_value):
         value = rospy.get_param(param_name, default_value)
