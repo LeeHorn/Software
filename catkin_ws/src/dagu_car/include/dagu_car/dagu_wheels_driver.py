@@ -113,12 +113,15 @@ class DaguWheelsDriver:
         self.rightMotor2.run(rightMotor2Mode)
         
 
-    def setWheelsSpeed(self, left, right,left2,right2):
-        self.leftSpeed = left
-        self.rightSpeed = right
+    def setWheelsSpeed(self, left, right, sign):
+        if sign==1:
+            self.leftSpeed = left
+            self.rightSpeed = right
         #add
-        self.leftSpeed2 = left2
-        self.rightSpeed2 = right2
+        elif sign ==2:
+            self.leftSpeed2 = left
+            self.rightSpeed2 = right
+
         self.updatePWM()
 
     def __del__(self):

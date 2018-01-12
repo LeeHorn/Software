@@ -35,9 +35,9 @@ class WheelsDriverNode(object):
 
     def cbWheelsCmd(self,msg):
         if self.estop:
-            self.driver.setWheelsSpeed(left=0.0,right=0.0)
+            self.driver.setWheelsSpeed(left=0.0,right=0.0,1)
             return
-        self.driver.setWheelsSpeed(left=msg.vel_left,right=msg.vel_right)
+        self.driver.setWheelsSpeed(left=msg.vel_left,right=msg.vel_right,1)
         # Put the wheel commands in a message and publish
         self.msg_wheels_cmd.header = msg.header
         # Record the time the command was given to the wheels_driver
@@ -49,9 +49,9 @@ class WheelsDriverNode(object):
     #add callback
     def cbWheelsCmd2(self,msg):
         if self.estop:
-            self.driver.setWheelsSpeed(left2=0.0,right2=0.0)
+            self.driver.setWheelsSpeed(left=0.0,right=0.0,2)
             return
-        self.driver.setWheelsSpeed(left2=msg.vel_left,right2=msg.vel_right)
+        self.driver.setWheelsSpeed(left=msg.vel_left,right=msg.vel_right,2)
         # Put the wheel commands in a message and publish
         self.msg_wheels_cmd2.header = msg.header
         # Record the time the command was given to the wheels_driver
@@ -68,7 +68,8 @@ class WheelsDriverNode(object):
             rospy.loginfo("[%s] Emergency Stop Released")
 
     def on_shutdown(self):
-        self.driver.setWheelsSpeed(left=0.0,right=0.0)
+        self.driver.setWheelsSpeed(left=0.0,right=0.0,1)
+        self.driver.setWheelsSpeed(left=0.0,right=0.0,2)
         rospy.loginfo("[%s] Shutting down."%(rospy.get_name()))
 
 if __name__ == '__main__':
