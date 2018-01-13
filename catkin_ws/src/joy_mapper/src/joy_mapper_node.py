@@ -33,6 +33,8 @@ class JoyMapper(object):
         self.pub_avoidance = rospy.Publisher("~start_avoidance",BoolStamped,queue_size=1)
         #add Publication
         self.pub_car_cmd2 = rospy.Publisher("~car_cmd2", Twist2DStamped, queue_size=1)
+        self.pub_button_drop = rospy.Publisher("~button_drop", BoolStamped, queue_size=1)
+        self.pub_button_grab = rospy.Publisher("~button_grab", BoolStamped, queue_size=1)
 
         # Subscriptions
         self.sub_joy_ = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)
@@ -99,7 +101,20 @@ class JoyMapper(object):
 # logitek = 8, left joy = 9, right joy = 10
 
     def processButtons(self, joy_msg):
-        if (joy_msg.buttons[6] == 1): #The back button
+        #add button
+        if(joy_msg.buttons[0] == 1):
+            rospy.loginfo("[%s] You Press Button grab " %(self.node_name))
+            state = BoolStamped()
+            state.data = True
+            self.pub_button_grab.publush(state)
+
+        elif(joy_msg.buttons[1] == 1):
+            rospy.loginfo("[%s] You Press Button drop " %(self.node_name))
+            state = BoolStamped()
+            state.data = True
+            self.pub_button_drop.publush(state)
+
+        elif (joy_msg.buttons[6] == 1): #The back button
             override_msg = BoolStamped()
             override_msg.header.stamp = self.joy.header.stamp
             override_msg.data = True
