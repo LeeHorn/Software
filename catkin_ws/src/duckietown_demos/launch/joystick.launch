@@ -15,8 +15,8 @@
     </node>
 
     <!-- joy_mapper -->
-    <remap from="joy_mapper_node/sub_grab" to="joy_mapper_node/pub_button_grab"/>
-    <remap from="joy_mapper_node/sub_drop" to="joy_mapper_node/pub_button_drop"/>
+<!--    <remap from="joy_mapper_node/sub_grab" to="joy_mapper_node/button_grab"/>
+    <remap from="joy_mapper_node/sub_drop" to="joy_mapper_node/button_drop"/> -->
     <include file="$(find joy_mapper)/launch/joy_mapper_node.launch">
         <arg name="veh" value="$(arg veh)"/>
         <arg name="local" value="$(arg local)"/>
