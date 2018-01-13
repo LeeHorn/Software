@@ -14,6 +14,8 @@ class JoyMapper(object):
         
         self.joy = None
         self.last_pub_msg = None
+        self.last_grab = False
+        self.last_drop = False
         self.last_pub_time = rospy.Time.now()
 
 
@@ -105,14 +107,18 @@ class JoyMapper(object):
         if(joy_msg.buttons[0] == 1):
             rospy.loginfo("[%s] You Press Button grab " %(self.node_name))
             state = BoolStamped()
-            state.data = True
-            self.pub_button_grab.publush(state)
+            state.header.stamp = self.joy.header.stamp
+            state.data = not self.last_grab
+            self.last_grab = state.data
+            self.pub_button_grab.publish(state)
 
         elif(joy_msg.buttons[1] == 1):
             rospy.loginfo("[%s] You Press Button drop " %(self.node_name))
             state = BoolStamped()
-            state.data = True
-            self.pub_button_drop.publush(state)
+            state.header.stamp = self.joy.header.stamp
+            state.data = not self.last_drop
+            self.last_drop = state.data
+            self.pub_button_drop.publish(state)
 
         elif (joy_msg.buttons[6] == 1): #The back button
             override_msg = BoolStamped()
