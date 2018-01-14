@@ -6,8 +6,8 @@ from duckietown_msgs.msg import  BoolStamped
 
 class arduinoROS(object):
     def __init__(self):
-        self.button_a = False
-        self.button_b = False
+        self.button_a = BoolStamped()
+        self.button_b = BoolStamped()
 
         # =========== publisher ===========
         self.pub_mid_grab = rospy.Publisher("/arduino/sub/grab", BoolStamped, queue_size=1)
@@ -20,17 +20,20 @@ class arduinoROS(object):
 
    # =========== subscribe button a===========
     def a_process(self, msg):
-        self.button_a = msg.data
-        print "Button_A = ", self.button_a     
-        self.pub_mid_grab.publish(button_a)
+        state = BoolStamped()
+        state.header.stamp = msg.header.stamp
+        state.data = msg
+        print "Button_A = ", state.data
+        self.pub_mid_grab.publish(state)
         
 
     # =========== subscribe button b ===========
     def b_process(self, msg):
-        self.button_b = msg.data
-        print "Button_B = ", self.button_b     
-        self.pub_mid_grab.publish(button_b)
-
+        state = BoolStamped()
+        state.header.stamp = msg.header.stamp
+        state.data = msg
+        print "Button_B = ", state.data
+        self.pub_mid_drop.publish(state)
 
 if __name__ == "__main__":
     rospy.init_node("arduino_ros", anonymous = False)

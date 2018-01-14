@@ -3,6 +3,7 @@
     <arg name="local" default="false" doc="true for running on laptop. false for running on vehicle."/>
     <arg name="config" default="baseline" doc="Specify a config."/>
     <arg name="param_file_name" default="default" doc="Specify a param file. ex:megaman." />
+    <arg name="arduino" default="true"/>
 
 
     <include file="$(find duckietown)/machines"/>
@@ -61,9 +62,9 @@
 
     <!--add arduino-->
     <group if="$(arg arduino)">
-        <remap from="mid_A" to="button_grab" />
-        <remap from="mid_B" to="button_drop" />
-        <include file="$(find csp_demo_arduino)/launch/arduino_node.launch" >
+        <remap from="arduino_node/mid_A" to="joy_mapper_node/button_grab" />
+        <remap from="arduino_node/mid_B" to="joy_mapper_node/button_drop" />
+        <include file="$(find arduino)/launch/arduino_node.launch" >
             <arg name="veh" value="$(arg veh)"/>
         </include>
     </group>
