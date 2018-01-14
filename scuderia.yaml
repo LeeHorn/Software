@@ -313,3 +313,6 @@ gd3:
 
 hcr:
   name: hcr
+
+octopusdinter:
+  name: dinter
