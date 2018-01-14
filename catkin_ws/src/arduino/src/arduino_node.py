@@ -24,7 +24,7 @@ class arduinoROS(object):
         state.header.stamp = msg.header.stamp
         state.data = msg
         print "Button_A = ", state.data
-        self.pub_mid_grab.publish(state)
+        self.pub_mid_grab.publish(state.data)
         
 
     # =========== subscribe button b ===========
@@ -33,7 +33,7 @@ class arduinoROS(object):
         state.header.stamp = msg.header.stamp
         state.data = msg
         print "Button_B = ", state.data
-        self.pub_mid_drop.publish(state)
+        self.pub_mid_drop.publish(state.data)
 
 if __name__ == "__main__":
     rospy.init_node("arduino_ros", anonymous = False)
