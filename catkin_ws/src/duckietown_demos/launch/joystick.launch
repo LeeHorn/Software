@@ -58,4 +58,13 @@
     <include file="$(find dagu_car)/launch/wheels_driver_node.launch">
         <arg name="veh" value="$(arg veh)"/>
     </include>
+
+    <!--add arduino-->
+    <group if="$(arg arduino)">
+        <remap from="mid_A" to="button_grab" />
+        <remap from="mid_B" to="button_drop" />
+        <include file="$(find csp_demo_arduino)/launch/arduino_node.launch" >
+            <arg name="veh" value="$(arg veh)"/>
+        </include>
+    </group>
 </launch>

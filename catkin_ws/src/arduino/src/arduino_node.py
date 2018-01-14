@@ -1,62 +1,36 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np
-from duckietown_msgs.msg import AprilTagDetectionArray, BoolStamped
-from std_msgs.msg import Float32, Int32
+from duckietown_msgs.msg import  BoolStamped
+
 
 class arduinoROS(object):
     def __init__(self):
-        self.dis = 0.0 # distance from ultrasound
-        self.using_apriltags = False;
+        self.button_a = False
+        self.button_b = False
 
         # =========== publisher ===========
-        self.pub_led = rospy.Publisher("/arduino/sub/led", Int32, queue_size=10, latch=True)
-        self.pub_result = rospy.Publisher("~result", BoolStamped, queue_size=1)
+        self.pub_mid_grab = rospy.Publisher("/arduino/sub/grab", BoolStamped, queue_size=1)
+        self.pub_mid_drop = rospy.Publisher("/arduino/sub/drop", BoolStamped, queue_size=1)
 
         # =========== subscriber ===========
-        self.sub_dis = rospy.Subscriber("/arduino/pub/dis", Float32, self.cbDis)
-        self.sub_tags = rospy.Subscriber("~tag_info", AprilTagDetectionArray, self.cbTags)
+        self.sub_mid_A = rospy.Subscriber("~mid_A", BoolStamped, self.a_process, queue_size=1)
+        self.sub_mid_B = rospy.Subscriber("~mid_B", BoolStamped, self.b_process, queue_size=1)
 
-   # =========== subscribe distance from arduino ===========
-    def cbDis(self, msg):
-        self.dis = msg.data # self.dis = distance from arduino
-        print "distance = ", self.dis
-        
-        led_cmd = Int32()
-        drive = BoolStamped()
-        if self.dis < 30.0:
-            led_cmd.data = 1
-            self.pub_led.publish(led_cmd.data)
-            drive.data = True
-            self.pub_result.publish(drive)
-        else:
-            led_cmd.data = 0
-            self.pub_led.publish(led_cmd.data)
-            drive.data = False
-            self.pub_result.publish(drive)
+
+   # =========== subscribe button a===========
+    def a_process(self, msg):
+        self.button_a = msg.data
+        print "Button_A = ", self.button_a     
+        self.pub_mid_grab.publish(button_a)
         
 
-    # =========== subscribe tag information ===========
-    def cbTags(self, msg):
-        if not self.using_apriltags:
-            return
+    # =========== subscribe button b ===========
+    def b_process(self, msg):
+        self.button_b = msg.data
+        print "Button_B = ", self.button_b     
+        self.pub_mid_grab.publish(button_b)
 
-        count = 0
-        led_cmd = Int32()
-        for detection in msg.detections: # count if there is apriltag or not
-            count += 1
-
-        # =========== if there is apriltag ===========
-        if count > 0:
-            print "LED on"
-            led_cmd.data = 1
-            self.pub_led.publish(led_cmd.data) #turn on LED on arduino
-
-        # =========== if there is no apriltag ===========
-        else: # no apriltags
-            print "LED off"
-            led_cmd.data = 0
-            self.pub_led.publish(led_cmd.data) # turn off LED on arduino
 
 if __name__ == "__main__":
     rospy.init_node("arduino_ros", anonymous = False)

@@ -3,7 +3,7 @@
 	<arg name="veh"  doc="Name of vehicle"/>
 	<arg name="pkg_name" default="arduino"/>
 	<arg name="arduino" default="true"/>
-	<arg name="wheel" default="true"/>
+	
 	<!-- ============== open ROS on arduino ============== -->
 	<node
 		pkg="rosserial_python" type="serial_node.py" name="serial_node">
